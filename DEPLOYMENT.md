@@ -11,52 +11,47 @@ vercel.com              railway.app/render.com
 
 ## Option 1: Frontend on Vercel + Backend on Railway (RECOMMENDED)
 
+### Deploy Backend on Railway
+
+1. Go to https://railway.app
+2. Click "New Project" → "Deploy from GitHub repo"
+3. Select "Raaju-v1.0"
+4. In your Railway Dashboard:
+   - Click on the service that was created
+   - Go to the **Settings** tab
+   - Under **Root Directory**: Enter `backend`
+   - Under **Dockerfile**: Should auto-detect
+   - If not, check the **Build** section and verify it shows the Dockerfile
+
+5. Add Environment Variables (in Variables section):
+   ```
+   OPENROUTER_API_KEY=sk-or-v1-xxxxx (your API key)
+   BACKEND_PORT=8000
+   FRONTEND_URL=https://your-vercel-url.vercel.app
+   ```
+
+6. Click **Deploy** → Wait for it to finish
+7. Once deployed, see your **Public URL** (looks like: `https://raaju-v1-0-production.up.railway.app`)
+8. Copy this URL for the next step ✅
+
 ### Deploy Frontend on Vercel
 
 1. Go to https://vercel.com
-2. Sign in with GitHub
-3. Click "New Project"
-4. Select your "Raaju-v1.0" repository
-5. Configure:
+2. Click "New Project"
+3. Select your "Raaju-v1.0" repository
+4. Configure:
    - **Framework**: Vite
    - **Root Directory**: `frontend`
    - **Build Command**: `npm run build`
    - **Install Command**: `npm install`
    - **Output Directory**: `dist`
-6. Add Environment Variable (optional):
-   - `VITE_API_URL=https://your-railway-url.up.railway.app` (add after backend deployed)
-7. Click "Deploy" ✅
 
-### Deploy Backend on Railway
+5. Add Environment Variable:
+   - `VITE_API_URL=https://raaju-v1-0-production.up.railway.app` (use your Railway URL from step 7 above)
 
-1. Go to https://railway.app
-2. Click "New Project"
-3. Select "Deploy from GitHub repo"
-4. Choose "Raaju-v1.0"
-5. Configure:
-   - **Root Directory**: Set to `backend` in Railway settings
-   - **Python Version**: 3.11
-6. Add Environment Variables:
-   ```
-   OPENROUTER_API_KEY=sk-or-v1-xxxxx
-   BACKEND_PORT=8000
-   FRONTEND_URL=https://your-vercel-url.vercel.app
-   ```
-7. Railway will auto-deploy and give you a URL like:
-   ```
-   https://raaju-v1-0-production.up.railway.app
-   ```
-
-### Link Frontend to Backend
-
-After Railway deploys, update Vercel:
-
-1. Go to Vercel Project Settings
-2. Add Environment Variable:
-   ```
-   VITE_API_URL=https://raaju-v1-0-production.up.railway.app
-   ```
-3. Redeploy the frontend
+6. Click "Deploy" ✅
+7. Once deployed, you'll get a Vercel URL like: `https://raaju-v1-0.vercel.app`
+8. Update the Railway `FRONTEND_URL` with this Vercel URL if needed
 
 ## Option 2: Alternative Backend Hosting
 
