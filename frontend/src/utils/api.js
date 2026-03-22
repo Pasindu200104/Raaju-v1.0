@@ -11,7 +11,7 @@ const api = axios.create({
 });
 
 export const chatAPI = {
-  sendMessage: async (messages, model = 'mistralai/mistral-7b-instruct') => {
+  sendMessage: async (messages, model = 'openrouter/free') => {
     try {
       const response = await api.post('/api/chat', {
         messages,

@@ -15,7 +15,7 @@ function App() {
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('mistralai/mistral-7b-instruct');
+  const [selectedModel, setSelectedModel] = useState('openrouter/free');
   const [models, setModels] = useState([]);
   const [error, setError] = useState('');
   const messagesEndRef = useRef(null);

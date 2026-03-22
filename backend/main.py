@@ -123,24 +123,6 @@ async def get_available_models():
                 "name": "OpenRouter Free (Auto)",
                 "type": "free",
                 "description": "Smart router - automatically selects best available free model"
-            },
-            {
-                "id": "mistralai/mistral-7b-instruct",
-                "name": "Mistral 7B Instruct",
-                "type": "free",
-                "description": "Fast and efficient open-source model"
-            },
-            {
-                "id": "meta-llama/llama-2-70b-chat",
-                "name": "Llama 2 70B Chat",
-                "type": "free",
-                "description": "Meta's powerful open-source LLM"
-            },
-            {
-                "id": "nousresearch/nous-hermes-2-mixtral-8x7b-dpo",
-                "name": "Nous Hermes 2 Mixtral",
-                "type": "moderately-priced",
-                "description": "High-quality multi-expert model"
             }
         ]
     }
