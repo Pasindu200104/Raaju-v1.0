@@ -3,6 +3,8 @@ import { Send, Menu, Trash2, Settings } from 'lucide-react';
 import { chatAPI } from './utils/api';
 import ChatWindow from './components/ChatWindow';
 import Sidebar from './components/Sidebar';
+import VoiceControls from './components/VoiceControls';
+import useVoiceAssistant from './hooks/useVoiceAssistant';
 import './App.css';
 
 function App() {
@@ -19,9 +21,29 @@ function App() {
   const [models, setModels] = useState([]);
   const [error, setError] = useState('');
   const messagesEndRef = useRef(null);
+  const initializedRef = useRef(false);
 
-  // Fetch available models on mount
+  // Voice assistant hook
+  const {
+    isListening,
+    isWakeWordDetected,
+    voiceEnabled,
+    setVoiceEnabled,
+    transcript,
+    isSpeaking,
+    startWakeWordDetection,
+    stopListening,
+    speak,
+    stopSpeaking,
+    resetWakeWord,
+  } = useVoiceAssistant();
+
+  // Handle voice command (auto-send) - defined before useEffect that uses it
+  const handleVoiceCommand = useRef(null);
+
+  // Fetch available models and initialize voice once
   useEffect(() => {
+    // Fetch models
     const fetchModels = async () => {
       try {
         const data = await chatAPI.getModels();
@@ -31,12 +53,47 @@ function App() {
       }
     };
     fetchModels();
+    
+    // Initialize voice detection once on first mount
+    if (!initializedRef.current && voiceEnabled) {
+      console.log('🚀 Initializing voice detection on mount');
+      initializedRef.current = true;
+      // Use setTimeout to ensure state is ready
+      setTimeout(() => {
+        startWakeWordDetection();
+      }, 500);
+    }
   }, []);
 
   // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Handle voice command detection
+  useEffect(() => {
+    if (isWakeWordDetected && transcript && !loading) {
+      console.log('✅ Voice command:', transcript);
+      if (handleVoiceCommand.current) {
+        handleVoiceCommand.current(transcript);
+      }
+    }
+  }, [isWakeWordDetected, transcript, loading]);
+
+  // Handle voice toggle
+  useEffect(() => {
+    if (voiceEnabled && initializedRef.current) {
+      console.log('🔊 Voice toggled ON');
+      setTimeout(() => {
+        if (voiceEnabled) {
+          startWakeWordDetection();
+        }
+      }, 100);
+    } else if (!voiceEnabled) {
+      console.log('🔇 Voice toggled OFF');
+      stopListening();
+    }
+  }, [voiceEnabled]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -61,10 +118,53 @@ function App() {
       const response = await chatAPI.sendMessage(messagesForAPI, selectedModel);
       
       // Add assistant response
-      setMessages(prev => [...prev, {
+      const assistantMessage = {
         role: 'assistant',
         content: response.message
-      }]);
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+
+      // Speak the response if voice is enabled and pass reset callback
+      if (voiceEnabled) {
+        speak(response.message, resetWakeWord);
+      }
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to get response. Please check if backend is running.');
+      console.error('Error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Define handleVoiceCommand function and store in ref
+  handleVoiceCommand.current = async (command) => {
+    if (!command.trim()) return;
+
+    // Add user message
+    const userMessage = { role: 'user', content: command };
+    setMessages(prev => [...prev, userMessage]);
+    setLoading(true);
+    setError('');
+
+    try {
+      // Prepare messages for API
+      const messagesForAPI = [...messages, userMessage].map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+
+      // Call API
+      const response = await chatAPI.sendMessage(messagesForAPI, selectedModel);
+      
+      // Add assistant response
+      const assistantMessage = {
+        role: 'assistant',
+        content: response.message
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+
+      // Speak the response and reset listening when done
+      speak(response.message, resetWakeWord);
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to get response. Please check if backend is running.');
       console.error('Error:', err);
@@ -130,6 +230,16 @@ function App() {
             {error}
           </div>
         )}
+
+        {/* Voice Controls */}
+        <VoiceControls
+          voiceEnabled={voiceEnabled}
+          onToggleVoice={() => setVoiceEnabled(!voiceEnabled)}
+          isWakeWordDetected={isWakeWordDetected}
+          isListening={isListening}
+          isSpeaking={isSpeaking}
+          transcript={transcript}
+        />
 
         {/* Input Area */}
         <div className="bg-slate-800 border-t border-slate-700 p-4">
